@@ -4,8 +4,8 @@
 #include "arm_book_lib.h"
 
 //=====[Defines]===============================================================
-#define BUZZER_ON 0
-#define BUZZER_OFF 1
+#define BUZZER_ON 1
+#define BUZZER_OFF 0
 
 //=====[Declaration and initialization of public global objects]===============
 
@@ -87,21 +87,20 @@ void ignitionReady(){
 
 void problemCheck(){
     buzzer = BUZZER_ON;
-
-    string outputString = " ";
+    uartUsb.write("Ignition Inhibited\r\n", 20);
+    
+    // string outputString = " ";
 
     if(!driverSeatSensor){
-        outputString += "Driver seat not occupied.\r\n";
+        uartUsb.write("Driver seat not occupied.\r\n", 27);
     } 
     if(!driverSeatbeltSensor){
-        outputString += "Driver seatbelt not fastened.\r\n";
+        uartUsb.write("Driver seatbelt not fastened.\r\n", 31);
     }
     if(!passengerSeatSensor){
-        outputString += "Passenger seat not occupied.\r\n";
+        uartUsb.write("Passenger seat not occupied.\r\n", 30);
     }
     if(!passengerSeatbeltSensor){
-        outputString += "Passenger seatbelt not fastened.\r\n";
+        uartUsb.write("Passenger seatbelt not fastened.\r\n\r\n", 34);
     }
-    uartUsb.write("Ignition Inhibited\r\n", 20);
-    uartUsb.write(outputString, outputString.length());
 }
