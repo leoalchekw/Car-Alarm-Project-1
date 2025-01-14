@@ -4,6 +4,8 @@
 #include "arm_book_lib.h"
 
 //=====[Defines]===============================================================
+#define BUZZER_ON 0
+#define BUZZER_OFF 1
 
 //=====[Declaration and initialization of public global objects]===============
 
@@ -27,7 +29,7 @@ UnbufferedSerial uartUsb(USBTX, USBRX, 115200);
 
 void inputs();
 void outputs();
-bool ignitionReady();
+void ignitionReady();
 void problemCheck();
 
 //=====[Main function, the program entry point after power on or reset]========
@@ -41,7 +43,7 @@ int main()
         ignitionReady();
 
         if(ignition){
-
+            uartUsb.write ("Trying to start the engine\r\n", 28);
             if(greenLED){
 
                 uartUsb.write("Engine started.\r\n", 17);
@@ -49,11 +51,9 @@ int main()
                 blueLED = ON;
 
             } else {
-
                 problemCheck();
             }
         }
-
     }
 }
 
@@ -70,14 +70,14 @@ void outputs(){
 
     greenLED = OFF;
     blueLED = OFF;
-    buzzer.mode(PullDown)
+    buzzer = BUZZER_OFF;
 }
 
 void ignitionReady(){
 
     if (driverSeatSensor){
 
-        uartUsb.write("Welcome to enhanced alarm system model 218-W25\r\n", 48)
+        uartUsb.write("Welcome to enhanced alarm system model 218-W25\r\n", 48);
 
         if(driverSeatbeltSensor && passengerSeatSensor && passengerSeatbeltSensor){
             greenLED = ON;
@@ -86,9 +86,9 @@ void ignitionReady(){
 }
 
 void problemCheck(){
-    //turn on buzzer
+    buzzer = BUZZER_ON;
 
-    string outputString = "";
+    string outputString = " ";
 
     if(!driverSeatSensor){
         outputString += "Driver seat not occupied.\r\n";
