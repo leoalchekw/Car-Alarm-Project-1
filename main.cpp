@@ -4,14 +4,14 @@
 #include "arm_book_lib.h"
 
 //=====[Defines]===============================================================
-#define BUZZER_ON 1
-#define BUZZER_OFF 0
+#define BUZZER_ON 0
+#define BUZZER_OFF 1
 
 //=====[Declaration and initialization of public global objects]===============
 
 DigitalIn driverSeatSensor(D7);
-DigitalIn driverSeatbeltSensor(D6);
-DigitalIn passengerSeatSensor(D5);
+DigitalIn passengerSeatSensor(D6);
+DigitalIn driverSeatbeltSensor(D5);
 DigitalIn passengerSeatbeltSensor(D4);
 
 DigitalIn ignition(BUTTON1);
@@ -24,6 +24,9 @@ UnbufferedSerial uartUsb(USBTX, USBRX, 115200);
 
 //=====[Declaration and initialization of public global variables]=============
 
+bool driverIn = false;
+bool engineOn = false;
+bool problem = false;
 
 //=====[Declarations (prototypes) of public functions]=========================
 
@@ -42,16 +45,16 @@ int main()
     while (true){
         ignitionReady();
 
-        if(ignition){
-            uartUsb.write ("Trying to start the engine\r\n", 28);
+        if(ignition && !problem && !engineOn){
             if(greenLED){
-
                 uartUsb.write("Engine started.\r\n", 17);
                 greenLED = OFF;
                 blueLED = ON;
+                engineOn = true;
 
             } else {
                 problemCheck();
+                problem = true;
             }
         }
     }
@@ -77,11 +80,20 @@ void ignitionReady(){
 
     if (driverSeatSensor){
 
-        uartUsb.write("Welcome to enhanced alarm system model 218-W25\r\n", 48);
-
+        if (!driverIn && !engineOn){
+            uartUsb.write("Welcome to enhanced alarm system model 218-W25\r\n", 48);
+            driverIn = true;
+            }
+    
         if(driverSeatbeltSensor && passengerSeatSensor && passengerSeatbeltSensor){
             greenLED = ON;
         } 
+        else{
+            greenLED = OFF;
+        }
+    } else {
+        driverIn = false;
+        greenLED = OFF;
     }
 }
 
@@ -89,7 +101,6 @@ void problemCheck(){
     buzzer = BUZZER_ON;
     uartUsb.write("Ignition Inhibited\r\n", 20);
     
-    // string outputString = " ";
 
     if(!driverSeatSensor){
         uartUsb.write("Driver seat not occupied.\r\n", 27);
@@ -101,6 +112,6 @@ void problemCheck(){
         uartUsb.write("Passenger seat not occupied.\r\n", 30);
     }
     if(!passengerSeatbeltSensor){
-        uartUsb.write("Passenger seatbelt not fastened.\r\n\r\n", 34);
+        uartUsb.write("Passenger seatbelt not fastened.\r\n", 34);
     }
 }
